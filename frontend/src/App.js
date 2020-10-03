@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import './App.css';
 import Header from './components/Header';
 import Landing from './components/Landing';
+import UserInput from './components/UserInput';
 
 function App() {
     return (
@@ -11,7 +12,7 @@ function App() {
             <Header />
             <Router>
                 <Route path="/" exact component={Landing} />
-                {/* <Route path="/edit/:id" component={EditTodo} /> */}
+                <Route path="/tracker" component={UserInput} />
             </Router>
         </div>
     );
