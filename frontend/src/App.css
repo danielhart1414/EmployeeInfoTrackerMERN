@@ -3,6 +3,12 @@
     padding-right: 15px;
 }
 
+/* To keep validation images from appearing. This keeps site appearance consistent when autofill
+removes some valdiation images */
+input {
+    background-image: none !important;
+}
+
 a {
     color: #0366d6;
 }
