@@ -4,7 +4,10 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
-// Add Yup and react hook forms; check mobile view; then start on backend
+// make it so only digits and . go into the field; consider making the field a string
+// that validates with a regex and has an onChange handler removing bad inputs using .replace (,''); check the regex
+// and then cast to number on the backend
+// check mobile views; start on backend; add the form post and output tables now
 
 const UserInput = () => {
 
@@ -21,11 +24,13 @@ const UserInput = () => {
         department: yup.string().required("Please enter a department"),
         birthdate: yup.date()
             .typeError("Please enter a valid date")
-            .max(new Date(), "This is not a valid date")
             .max(getAdjustedDate(16), "Either this date has not arrived yet, or this person may be too young to work for you.")
             .min(getAdjustedDate(125), "Is this person still alive?")
             .required(),
-        salary: yup.number().typeError("Please enter a number").required()
+        salary: yup.number()
+            .integer("Please round to the nearest dollar")
+            .typeError("Please enter a valid salary number")
+            .required()
     });
 
     const { register, handleSubmit, errors, formState } = useForm({
@@ -38,9 +43,9 @@ const UserInput = () => {
 
     return(
         <Container>
-            <h3 class="mt-4">Submit new employee info here</h3>
+            <h3 className="mt-4">Submit new employee info here</h3>
 
-            <Form class="my-3" onSubmit={handleSubmit(onSubmit)}>
+            <Form className="my-3" onSubmit={handleSubmit(onSubmit)}>
                 <FormGroup controlId="formId">
                     <Form.Label>Id</Form.Label>
                     <Form.Control
@@ -116,14 +121,14 @@ const UserInput = () => {
                 </FormGroup>
 
                 <FormGroup controlId="formSalary">
-                    <Form.Label>Salary</Form.Label>
+                    <Form.Label>Salary ($)</Form.Label>
                     <Form.Control
                         type="number"
                         name="salary"
                         isValid={formState.isSubmitted && formState.touched.salary && !errors.salary}
                         isInvalid={errors.salary}
                         min="0"
-                        step="0.01"
+                        step="1"
                         placeholder="100"
                         ref={register}
                     />
@@ -132,7 +137,7 @@ const UserInput = () => {
                     </Form.Control.Feedback>
                 </FormGroup>
 
-                <Button variant="info" class="btn-lg mt-1" type="submit">Submit</Button>
+                <Button variant="info" className="btn-lg mt-1" type="submit">Submit</Button>
             </Form>
         </Container>
     );
