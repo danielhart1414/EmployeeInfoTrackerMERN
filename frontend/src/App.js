@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import './App.css';
 import Header from './components/Header';
 import Landing from './components/Landing';
-import UserInput from './components/UserInput';
+import Tracker from './components/Tracker'
 
 function App() {
     return (
@@ -12,7 +12,7 @@ function App() {
             <Header />
             <Router>
                 <Route path="/" exact component={Landing} />
-                <Route path="/tracker" component={UserInput} />
+                <Route path="/tracker" component={Tracker} />
             </Router>
         </div>
     );
