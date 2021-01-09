@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Container, Form, FormGroup } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import axios from 'axios';
+import serverUrl from '../env';
 
 // make it so only digits and . go into the field; consider making the field a string
 // that validates with a regex and has an onChange handler removing bad inputs using .replace (,''); check the regex
@@ -10,7 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 // check mobile views; start on backend; add the form post and output tables now
 
 const UserInput = () => {
-
+    
     const getAdjustedDate = (adjustment) => {
         let date = new Date();
         date.setFullYear(date.getFullYear() - adjustment);
@@ -33,17 +35,28 @@ const UserInput = () => {
             .required()
     });
 
-    const { register, handleSubmit, errors, formState } = useForm({
+    const { register, handleSubmit, reset, errors, formState } = useForm({
         resolver: yupResolver(schema)
     });
 
-    const onSubmit = () => {
-
+    const onSubmit = (formData) => {
+        console.log(formData)
+        axios.post(serverUrl + 'employees', formData)
+            .then(() => {
+                alert('Update successful!');
+                reset();
+            })
+            .catch(err => {
+                if (err.response.data.existingUser)
+                    alert('This user already exists.');
+                else
+                    alert('Uh-oh--there was an error. Please try again.');
+            });
     }
 
     return(
         <Container>
-            <h3 className="mt-4">Submit new employee info here</h3>
+            <h3 className="mt-4">Submit employee info here</h3>
 
             <Form className="my-3" onSubmit={handleSubmit(onSubmit)}>
                 <FormGroup controlId="formId">
