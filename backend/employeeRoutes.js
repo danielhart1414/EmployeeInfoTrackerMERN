@@ -30,7 +30,7 @@ router.get('/', (req, res) => {
 });
 
 router.route('/:id').put((req, res, next) => {
-    Employee.findByIdAndUpdate(req.params.id, {$set: req.body}, (error, data) => {
+    Employee.updateOne({ id: req.params.id }, {$set: req.body}, (error, data) => {
         if (error) {
             return next(error);
         } else {
