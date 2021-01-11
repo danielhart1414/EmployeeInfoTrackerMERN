@@ -7,7 +7,7 @@ const PORT = 3000;
 
 require('dotenv').config();
 app.use(express.json());
-const dbUri = process.env.ATLAS_URI;
+const dbUri = process.env.ATLAS_CONNECTION_STRING;
 mongoose.connect(dbUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true});
 const connection = mongoose.connection;
 
