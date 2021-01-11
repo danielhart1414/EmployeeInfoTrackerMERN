@@ -1,32 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import serverUrl from '../env';
+import React, { useState } from 'react';
 import UserInput from './UserInput';
+import InfoTable from './InfoTable';
 
-// make it so only digits and . go into the field; consider making the field a string
-// that validates with a regex and has an onChange handler removing bad inputs using .replace (,''); check the regex
-// and then cast to number on the backend
-// check mobile views; start on backend; add the form post and output tables now
+// TODOs:
+// - Make it so only digits and . go into the salary field; consider making the field a string
+//      that validates with a regex and has an onChange handler removing bad inputs using .replace (,'');
+//      check the regex and then cast to number; the onChange handler could also add commas for thousands
+//      and a $
+// - Add comma and $ to table's salary field
+// - Improve mobile InfoTable layout
 
 const Tracker = () => {
-    const [ employees, setEmployees ] = useState(null);
-
-    function fetchEmployees() {
-        axios.get(serverUrl + 'employees')
-            .then(res => {
-                console.log(res.data);
-                setEmployees(res.data);
-            })
-            .catch(() => alert("Warning--bad server connection."));
-    }
-
-    useEffect(() => {
-        if (!employees)
-            fetchEmployees();
-    });
+    const [ employeeBeingModified, setEmployeeBeingModified ] = useState(null);
+    const [ employeeIsBeingAdded, setEmployeeIsBeingAdded ] = useState(false);
 
     return(
-        <UserInput/>
+        <div>
+            {employeeIsBeingAdded || employeeBeingModified ?
+                <UserInput
+                    setEmployeeIsBeingAdded={setEmployeeIsBeingAdded}
+                    employeeBeingModified={employeeBeingModified}
+                    setEmployeeBeingModified={setEmployeeBeingModified}
+                />
+            :
+                <InfoTable
+                    setEmployeeIsBeingAdded={setEmployeeIsBeingAdded}
+                    setEmployeeBeingModified={setEmployeeBeingModified}
+                />
+            }
+        </div>
     );
 }
 
