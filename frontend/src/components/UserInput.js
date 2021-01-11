@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Container, Form, FormGroup } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import axios from 'axios';
-import serverUrl from '../env';
+import { serverUrl } from '../env';
 
-// make it so only digits and . go into the field; consider making the field a string
-// that validates with a regex and has an onChange handler removing bad inputs using .replace (,''); check the regex
-// and then cast to number on the backend
-// check mobile views; start on backend; add the form post and output tables now
-
-const UserInput = () => {
+const UserInput = (props) => {
     
-    const getAdjustedDate = (adjustment) => {
+    const getAdjustedDate = (yearAdjustment) => {
         let date = new Date();
-        date.setFullYear(date.getFullYear() - adjustment);
+        date.setFullYear(date.getFullYear() - yearAdjustment);
         return date;
     }
 
@@ -26,7 +21,7 @@ const UserInput = () => {
         department: yup.string().required("Please enter a department"),
         birthdate: yup.date()
             .typeError("Please enter a valid date")
-            .max(getAdjustedDate(16), "Either this date has not arrived yet, or this person may be too young to work for you.")
+            .max(getAdjustedDate(16), "This person may be too young to work for you.")
             .min(getAdjustedDate(125), "Is this person still alive?")
             .required(),
         salary: yup.number()
@@ -35,28 +30,48 @@ const UserInput = () => {
             .required()
     });
 
-    const { register, handleSubmit, reset, errors, formState } = useForm({
+    const { register, handleSubmit, errors, formState } = useForm({
         resolver: yupResolver(schema)
     });
 
-    const onSubmit = (formData) => {
-        console.log(formData)
+    function addNewEmployee(formData) {
         axios.post(serverUrl + 'employees', formData)
             .then(() => {
                 alert('Update successful!');
-                reset();
+                props.setEmployeeIsBeingAdded(false);
             })
             .catch(err => {
-                if (err.response.data.existingUser)
-                    alert('This user already exists.');
+                if (err.response.data.existingEntry)
+                    alert('An employee with this Id already exists.');
                 else
                     alert('Uh-oh--there was an error. Please try again.');
             });
     }
 
+    function modifyEmployee(formData) {
+        axios.put(serverUrl + 'employees/' + props.employeeBeingModified.id, formData)
+            .then(() => {
+                alert('Update successful!');
+                props.setEmployeeBeingModified(null);
+            })
+            .catch(() => alert('Uh-oh--there was an error. Please try again.'));
+    }
+
+    const onSubmit = (formData) => {
+        if (props.employeeBeingModified)
+            modifyEmployee(formData);
+        else
+            addNewEmployee(formData);
+    }
+
+    function onCancelClick() {
+        props.setEmployeeIsBeingAdded(false);
+        props.setEmployeeBeingModified(null);
+    }
+
     return(
         <Container>
-            <h3 className="mt-4">Submit employee info here</h3>
+            <h4 className="mt-4">Submit Employee Info</h4>
 
             <Form className="my-3" onSubmit={handleSubmit(onSubmit)}>
                 <FormGroup controlId="formId">
@@ -66,6 +81,7 @@ const UserInput = () => {
                         name="id"
                         isValid={formState.isSubmitted && formState.touched.id && !errors.id}
                         isInvalid={errors.id}
+                        defaultValue={props.employeeBeingModified?.id}
                         placeholder="0000"
                         ref={register}
                     />
@@ -81,6 +97,7 @@ const UserInput = () => {
                         name="firstName"
                         isValid={formState.isSubmitted && formState.touched.firstName && !errors.firstName}
                         isInvalid={errors.firstName}
+                        defaultValue={props.employeeBeingModified?.firstName}
                         placeholder="John"
                         ref={register}
                     />
@@ -96,6 +113,7 @@ const UserInput = () => {
                         name="lastName"
                         isValid={formState.isSubmitted && formState.touched.lastName && !errors.lastName}
                         isInvalid={errors.lastName}
+                        defaultValue={props.employeeBeingModified?.lastName}
                         placeholder="Smith"
                         ref={register}
                     />
@@ -111,6 +129,7 @@ const UserInput = () => {
                         name="department"
                         isValid={formState.isSubmitted && formState.touched.department && !errors.department}
                         isInvalid={errors.department}
+                        defaultValue={props.employeeBeingModified?.department}
                         placeholder="Exploration"
                         ref={register}
                     />
@@ -126,6 +145,7 @@ const UserInput = () => {
                         name="birthdate"
                         isValid={formState.isSubmitted && formState.touched.birthdate && !errors.birthdate}
                         isInvalid={errors.birthdate}
+                        defaultValue={props.employeeBeingModified?.birthdate.substr(0,10)}
                         ref={register}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -142,6 +162,7 @@ const UserInput = () => {
                         isInvalid={errors.salary}
                         min="0"
                         step="1"
+                        defaultValue={props.employeeBeingModified?.salary}
                         placeholder="100"
                         ref={register}
                     />
@@ -150,7 +171,20 @@ const UserInput = () => {
                     </Form.Control.Feedback>
                 </FormGroup>
 
-                <Button variant="info" className="btn-lg mt-1" type="submit">Submit</Button>
+                <Button
+                    variant="info"
+                    className="btn-lg mt-1"
+                    type="submit"
+                >
+                    Submit
+                </Button>
+                <Button
+                    variant="secondary"
+                    className="btn-lg mt-1 ml-3"
+                    onClick={onCancelClick}
+                >
+                    Cancel
+                </Button>
             </Form>
         </Container>
     );
